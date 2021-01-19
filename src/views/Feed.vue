@@ -6,9 +6,15 @@
       <v-card-actions>
         <v-btn
           v-if="community.your_follow && community.your_follow.accepted"
-          @click="showeditor = !showeditor"
+          @click="showeditor = !showeditor; showlinkinput = false"
           ><v-icon left>mdi-pencil</v-icon>
           New Post</v-btn
+        >
+        <v-btn
+          v-if="community.your_follow && community.your_follow.accepted"
+          @click="showlinkinput = !showlinkinput; showeditor = false"
+          ><v-icon left>mdi-link</v-icon>
+        New Link</v-btn
         >
         <v-btn
           v-if="
@@ -28,6 +34,21 @@
           placeholder="Post Title"
         ></v-text-field>
         <Editor :submit="submit"> </Editor>
+      </v-card-text>
+    </v-card>
+    <v-card v-if="showlinkinput">
+      <v-card-title>New Link</v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="posttitle"
+          placeholder="Post Title"
+        ></v-text-field>
+        <v-form> 
+          <!-- Add vuetify form validation? -->
+          <!-- Switch to markdown editor? -->
+          <input v-model="linkinput" style="background-color: white; min-width: 400px; width: 100%" type="text" placeholder="Enter Url"/>
+          <v-btn style="display: block; margin-top: 8px" @click="submitlink">Submit</v-btn>
+        </v-form>
       </v-card-text>
     </v-card>
 
@@ -100,12 +121,15 @@ export default {
       community: null,
       posttitle: "",
       showeditor: false,
+      showlinkinput: false,
+      linkinput: '',
+      isValidUrl: false
     };
   },
   mounted: function () {
       console.log(this.$route.params);
 
-if (typeof (this.$route.params.communityID) == "undefined") {
+  if (typeof (this.$route.params.communityID) == "undefined") {
       this.loadDefaultPosts();
     } else {
       // Load community info
@@ -155,7 +179,6 @@ if (typeof (this.$route.params.communityID) == "undefined") {
         )
         .then(this.gotunsubscribed);
     },
-
     loadPosts() {
       console.log("Called loadPosts");
       if (this.$store.state.Username != "") {
@@ -179,7 +202,6 @@ if (typeof (this.$route.params.communityID) == "undefined") {
           .then(this.gotPosts);
       }
     },
-
     loadDefaultPosts() {
       console.log("Loading default posts");
       if (this.$store.state.Username != "") {
@@ -226,7 +248,6 @@ if (typeof (this.$route.params.communityID) == "undefined") {
       this.posts = this.tempposts;
       this.loaded = true;
     },
-
     goToUser() {
       return;
     },
@@ -267,9 +288,10 @@ if (typeof (this.$route.params.communityID) == "undefined") {
         this.alerttext = "Your post needs a title.";
         this.alerttimeout = 5000;
         this.showalert = true;
+        return;
       }
-      if (editorcontent == "") {
-        this.alerttext = "Type a repsonse before submitting!";
+      if (!editorcontent || editorcontent == "") {
+        this.alerttext = "Type a response before submitting!";
         this.alerttimeout = 5000;
         this.showalert = true;
         return;
@@ -284,6 +306,32 @@ if (typeof (this.$route.params.communityID) == "undefined") {
         .then(this.submitsuccess)
         .catch(this.submitfailed);
     },
+    submitlink: function () {
+      if (this.posttitle == "") {
+        this.alerttext = "Your post needs a title.";
+        this.alerttimeout = 5000;
+        this.showalert = true;
+        return;
+      }
+      if(!this.linkinput || this.linkinput == "")
+        this.alerttext = "Type a url before submitting!";
+        this.alerttimeout = 5000;
+        this.showalert = true;
+        return;
+      }
+      // validate url?
+      // create markdown with anchor tag with href??? Or just send the link via content_message?
+
+      // var submission = {};
+      // submission.content_markdown = editorcontent;
+      // submission.community = this.community.id;
+      // submission.title = this.posttitle;
+
+      // this.$http
+      //   .post(this.$LOTIDE + "/unstable/posts", submission)
+      //   .then(this.submitsuccess)
+      //   .catch(this.submitfailed);
+    },
     submitsuccess: function () {
       this.alerttext = "Post submitted!";
       this.alerttimeout = 5000;
@@ -295,9 +343,8 @@ if (typeof (this.$route.params.communityID) == "undefined") {
       this.alerttext = "Error: " + e.response.status + " : " + e.response.data;
       this.alerttimeout = 5000;
       this.showalert = true;
-    },
-  },
-};
+    }
+}
 </script>
 <style>
 .v-list-item__title {
