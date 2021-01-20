@@ -44,8 +44,8 @@
           placeholder="Post Title"
         ></v-text-field>
         <form> 
-          <input v-model="linkinput" style="background-color: white; min-width: 400px; width: 100%" type="text" placeholder="Enter Url"/>
-          <v-btn style="display: block; margin-top: 8px" @click="submitlink">Submit</v-btn>
+          <input v-model="linkinput" class="linkinput" type="text" placeholder="Enter Url"/>
+          <v-btn :disabled="!isValidLinkForm()" class="submitlinkbutton" @click="submitlink">Submit</v-btn>
         </form>
       </v-card-text>
     </v-card>
@@ -342,6 +342,9 @@ export default {
 
       return url.protocol === "http:" || url.protocol === "https:";
     },
+    isValidLinkForm: function() {
+      return this.posttitle && this.isValidUrl(this.linkinput);
+    },
     submitsuccess: function () {
       this.alerttext = "Post submitted!";
       this.alerttimeout = 5000;
@@ -360,5 +363,15 @@ export default {
 <style>
 .v-list-item__title {
   white-space: normal;
+}
+
+.linkinput {
+  background-color: white;
+  width: 100%;
+}
+
+.submitlinkbutton {
+  display: block;
+  margin-top: 8px;
 }
 </style>
