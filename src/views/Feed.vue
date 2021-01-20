@@ -43,12 +43,10 @@
           v-model="posttitle"
           placeholder="Post Title"
         ></v-text-field>
-        <v-form> 
-          <!-- Add vuetify form validation? -->
-          <!-- Switch to markdown editor? -->
+        <form> 
           <input v-model="linkinput" style="background-color: white; min-width: 400px; width: 100%" type="text" placeholder="Enter Url"/>
           <v-btn style="display: block; margin-top: 8px" @click="submitlink">Submit</v-btn>
-        </v-form>
+        </form>
       </v-card-text>
     </v-card>
 
@@ -122,14 +120,13 @@ export default {
       posttitle: "",
       showeditor: false,
       showlinkinput: false,
-      linkinput: '',
-      isValidUrl: false
+      linkinput: ''
     };
   },
   mounted: function () {
       console.log(this.$route.params);
 
-  if (typeof (this.$route.params.communityID) == "undefined") {
+    if (typeof (this.$route.params.communityID) == "undefined") {
       this.loadDefaultPosts();
     } else {
       // Load community info
@@ -150,7 +147,6 @@ export default {
             this.$route.params.communityID
         )
         .then(this.gotCommunityInfo);
-
 
       this.loadPosts();
     }
@@ -198,7 +194,6 @@ export default {
               this.$route.params.communityID +
               "/posts"
           )
-
           .then(this.gotPosts);
       }
     },
@@ -313,24 +308,39 @@ export default {
         this.showalert = true;
         return;
       }
-      if(!this.linkinput || this.linkinput == "")
+      if(!this.linkinput || this.linkinput == "") {
         this.alerttext = "Type a url before submitting!";
         this.alerttimeout = 5000;
         this.showalert = true;
         return;
       }
-      // validate url?
-      // create markdown with anchor tag with href??? Or just send the link via content_message?
+      if(!this.isValidUrl(this.linkinput)) {
+        this.alerttext = "Url is invalid!";
+        this.alerttimeout = 5000;
+        this.showalert = true;
+        return;
+      }
 
-      // var submission = {};
-      // submission.content_markdown = editorcontent;
-      // submission.community = this.community.id;
-      // submission.title = this.posttitle;
+      var submission = {};
+      submission.href = this.linkinput;
+      submission.community = this.community.id;
+      submission.title = this.posttitle;
 
-      // this.$http
-      //   .post(this.$LOTIDE + "/unstable/posts", submission)
-      //   .then(this.submitsuccess)
-      //   .catch(this.submitfailed);
+      this.$http
+        .post(this.$LOTIDE + "/unstable/posts", submission)
+        .then(this.submitsuccess)
+        .catch(this.submitfailed);
+    },
+    isValidUrl: function(string) {
+      let url;
+
+      try {
+        url = new URL(string);
+      } catch (_) {
+        return false;  
+      }
+
+      return url.protocol === "http:" || url.protocol === "https:";
     },
     submitsuccess: function () {
       this.alerttext = "Post submitted!";
@@ -344,6 +354,7 @@ export default {
       this.alerttimeout = 5000;
       this.showalert = true;
     }
+  }
 }
 </script>
 <style>
